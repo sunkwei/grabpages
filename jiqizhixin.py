@@ -79,7 +79,26 @@ def my_get_urls(tag):
 
 
 def my_get_content(tag):
-    return "abc"
+    ''' 机器之心内容是 <h1> ...</h1> <p> .. 这些组成，可以简单的删除所有 <...>
+    '''
+    def remove_html_markup(s):
+        tag = False
+        quote = False
+        out = ""
+
+        for c in s:
+                if c == '<' and not quote:
+                    tag = True
+                elif c == '>' and not quote:
+                    tag = False
+                elif (c == '"' or c == "'") and tag:
+                    quote = not quote
+                elif not tag:
+                    out = out + c
+
+        return out
+    
+    return tag.text
 
 
 def grab(logger):
