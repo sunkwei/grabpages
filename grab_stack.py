@@ -84,7 +84,7 @@ def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False):
     logger.info("begin grab size: {}".format(baseurl))
     res = requests.get(baseurl)
     urls = []
-    soup = bs(res.content, features="lxml")
+    soup = bs(res.content, features="html.parser")
     for o in soup:
         if isinstance(o, bs4.element.Tag):
             stack = GrabStack()
@@ -107,7 +107,7 @@ def get_page_content(logger, pattern, url, fc_get_content, show_path=False):
     logger.info("to get url: {}".format(url))
     res = requests.get(url)
     content = []
-    soup = bs(res.content, features="lxml")
+    soup = bs(res.content, features="html.parser")
     for o in soup:
         if isinstance(o, bs4.element.Tag):
             stack = GrabStack()

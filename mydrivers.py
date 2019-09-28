@@ -48,6 +48,7 @@ _content_pattern1 = [
     ("div", {
         "class": ["news_info"],
     }),
+    ("p", None)
 ]
 
 
@@ -75,9 +76,9 @@ def grab(logger):
             continue
 
         txt = ""
-        cs = get_page_content(logger, _content_pattern1, url, my_get_content, True)
+        cs = get_page_content(logger, _content_pattern1, url, my_get_content, False)
         if not cs:
-            cs = get_page_content(logger, _content_pattern2, url, my_get_content, True)
+            cs = get_page_content(logger, _content_pattern2, url, my_get_content, False)
         if not cs:
             logger.warning("{} no content".format(url))
             continue

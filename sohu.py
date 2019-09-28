@@ -322,6 +322,8 @@ def grab_site(baseurl, pattern, logger):
 
             # urls 为需要抓取的网页 ...
             for url in urls:
+                if _db.has(url):
+                    continue
                 grab_page(url, logger)
 
             logger.info("{}: {} pages saved".format(baseurl, len(urls)))
