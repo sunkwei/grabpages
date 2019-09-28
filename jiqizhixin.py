@@ -107,6 +107,10 @@ def grab(logger):
     for url in urls:
         if url[0] == "/":
             url = "https://www.jiqizhixin.com" + url
+
+            if _db.has(url):
+                continue
+            
             content = get_page_content(logger, _content_pattern, url, my_get_content)
             cs = ""
             for c in content:

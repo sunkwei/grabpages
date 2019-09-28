@@ -77,6 +77,9 @@ def grab(logger):
         if url[:2] == "//":
             url = "https:" + url
 
+        if db.has(url):
+            continue
+
         contents = get_page_content(logger, _content_pattern, url, my_get_content)
         cs = ""
         for c in contents:
