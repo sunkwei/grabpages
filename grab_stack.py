@@ -80,7 +80,7 @@ class GrabStack:
 
 
 
-def get_matched_link(logger, pattern, baseurl, fc_get_urls):
+def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False):
     logger.info("begin grab size: {}".format(baseurl))
     res = requests.get(baseurl)
     urls = []
@@ -90,6 +90,8 @@ def get_matched_link(logger, pattern, baseurl, fc_get_urls):
             stack = GrabStack()
             def parse_tag(tag):
                 stack.push(tag.name, tag)
+                if show_path:
+                    print(stack.get_path(moreinfo=1))
                 if stack.is_match_path(pattern):
                     for u in fc_get_urls(tag):
                         urls.append(u)
@@ -101,7 +103,7 @@ def get_matched_link(logger, pattern, baseurl, fc_get_urls):
     return urls
 
 
-def get_page_content(logger, pattern, url, fc_get_content):
+def get_page_content(logger, pattern, url, fc_get_content, show_path=False):
     logger.info("to get url: {}".format(url))
     res = requests.get(url)
     content = []
@@ -111,6 +113,8 @@ def get_page_content(logger, pattern, url, fc_get_content):
             stack = GrabStack()
             def parse_content(tag):
                 stack.push(tag.name, tag)
+                if show_path:
+                    print(stack.get_path(moreinfo=1))
                 if stack.is_match_path(pattern):
                     content.append(fc_get_content(tag))
                 for o in tag:
