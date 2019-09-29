@@ -4,6 +4,7 @@
 
 from grab_stack import get_matched_link, get_page_content
 from db import DB
+import os
 import os.path as osp
 
 
@@ -12,11 +13,14 @@ keywords_fname = "data/key_words.txt"
 _key_words = [
 ]
 
-if osp.isfile("data/key_words.txt"):
-    with open(keywords_fname) as f:
-        data = f.read()
-        _key_words = data.split()
+for name in os.listdir("data"):
+    fname = osp.join("data", name)
+    if osp.isfile(fname):
+        with open(fname) as f:
+            data = f.read()
+            _key_words.extend(data.split())
 
+print("ennn, there are {} key_words".format(len(_key_words)))
 
 _sites = [
     "http://baike.baidu.com/wenhua",
@@ -131,7 +135,7 @@ def grab_search(logger, word):
                 url = "http://baike.baidu.com" + url
             logger.info("GET redir url: {}".format(url))
         else:
-            logger.error("GET {} err, status = %d".format(url, res.status_code))
+            logger.error("GET {} err, status ={}".format(url, res.status_code))
             return
 
     db = DB()
