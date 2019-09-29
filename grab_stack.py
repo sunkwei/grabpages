@@ -34,7 +34,9 @@ class GrabStack:
             if moreinfo:
                 if isinstance(o[1], bs4.element.Tag):
                     tag = o[1]
-                    if tag.name == "div" and "class" in tag.attrs and tag["class"]:
+                    if "id" in tag.attrs:
+                        path += '{' + "#{}".format(tag["id"]) + '}'
+                    elif tag.name == "div" and "class" in tag.attrs and tag["class"]:
                         path += '{' + "{}".format(','.join(tag["class"])) + '}'
         return path
 
@@ -80,11 +82,16 @@ class GrabStack:
 
 
 
-def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False):
+def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False, headers={}):
     logger.info("begin grab size: {}".format(baseurl))
     if not pattern:
         return []
-    res = requests.get(baseurl)
+    sess = requests.session()
+    # to simulite browser
+    sess.headers["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+    for k,v in headers.items():
+        sess.headers[k] = v
+    res = sess.get(baseurl)
     urls = []
     soup = bs(res.content, features="html.parser")
     first_tag = soup
@@ -93,6 +100,8 @@ def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False):
         if not first_tag:
             logger.warning("{} not first_tag matched".format(baseurl))
             return []
+        else:
+            first_tag = first_tag.parent
     for o in first_tag:
         if isinstance(o, bs4.element.Tag):
             stack = GrabStack()
@@ -111,9 +120,14 @@ def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False):
     return urls
 
 
-def get_page_content(logger, pattern, url, fc_get_content, show_path=False):
+def get_page_content(logger, pattern, url, fc_get_content, show_path=False, headers={}):
     logger.info("to get url: {}".format(url))
-    res = requests.get(url)
+    sess = requests.session()
+    # to simulite browser
+    sess.headers["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+    for k,v in headers.items():
+        sess.headers[k] = v
+    res = sess.get(url)
     content = []
     soup = bs(res.content, features="html.parser")
     first_tag = soup

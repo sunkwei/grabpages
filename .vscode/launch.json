@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/grab.py",
             "console": "integratedTerminal",
             "args": [
-                "baike_baidu"
+                "news_cctv"
             ]
         },
         {
