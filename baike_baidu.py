@@ -119,6 +119,11 @@ def grab(logger):
 
 
 def grab_search(logger, word):
+    db = DB()
+    if db.has_keyword(word):
+        logger.info("word: {} exists".format(word))
+        return
+
     import requests
     url = "http://baike.baidu.com/search/word?word={}".format(word)
     sess = requests.session()
@@ -138,7 +143,6 @@ def grab_search(logger, word):
             logger.error("GET {} err, status ={}".format(url, res.status_code))
             return
 
-    db = DB()
     if db.has(url):
         logger.info("word: {} exists".format(word))
         return

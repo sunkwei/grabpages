@@ -18,6 +18,7 @@ import os, sys, logging, argparse
 import os.path as osp
 import sqlite3 as sq
 import hashlib
+import re
 
 
 
@@ -31,6 +32,32 @@ class DB:
         self.db_ = sq.connect(self.fname_)
         cmd = "create table if not exists tnews (_hashid char(36) primary key, _url text, _txt text)"
         self.db_.execute(cmd)
+
+        # 存储百科关键词索引，方便快速检查是否已经下载
+        cmd = "select name from sqlite_master where type='table'"
+        cur = self.db_.execute(cmd)
+        rs = cur.fetchall()
+        found = False
+        for r in rs:
+            if r[0] == "tkeywords":
+                found = True
+                break
+
+        if not found:
+            cmd = "create table tkeywords (_hashid char(36) primary key)"
+            self.db_.execute(cmd)
+            cur = self.db_.execute("select _url from tnews")
+            p = re.compile(r"word\?word=(.+)$")
+            f = cur.fetchone()
+            while f:
+                url = f[0]
+                r = p.search(url)
+                if r:
+                    kw = r.group(1)
+                    h = self.md5(kw)
+                    self.db_.execute("insert into tkeywords values (?)", (h,))
+                f = cur.fetchone()
+
         self.db_.commit()
 
 
@@ -54,6 +81,16 @@ class DB:
         return r[0] > 0
 
 
+    def has_keyword(self, word):
+        # 搜索 tkeyword，word 是否存在
+        hashid = self.md5(word)
+        cur = self.db_.cursor()
+        cur.execute("select count(*) from tkeywords where _hashid=?", (hashid,))
+        r = cur.fetchone()
+        cur.close()
+        return r[0] == 1
+
+
     def save(self, url, txt):
         if not self.has(url):
             hashid = self.md5(url)
@@ -61,6 +98,15 @@ class DB:
             cur = self.db_.cursor()
             cur.execute(cmd, (hashid, url, txt))
             cur.close()
+
+            # 检查是否时百度百科的搜索 ...
+            p = re.compile(r"word\?word=(.+)$")
+            m = p.search(url)
+            if m:
+                word = m.group(1)
+                h = self.md5(word)
+                self.db_.execute("insert into tkeywords values (?)", (h,))
+
             self.db_.commit()
             return 0
         else:
