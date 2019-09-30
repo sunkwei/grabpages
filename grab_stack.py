@@ -5,6 +5,7 @@
 import bs4
 import requests
 from bs4 import BeautifulSoup as bs
+import sys
 
 
 class GrabStack:
@@ -82,7 +83,7 @@ class GrabStack:
 
 
 
-def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False, headers={}):
+def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False, headers={}, max_url_count=sys.maxsize):
     logger.info("begin grab size: {}".format(baseurl))
     if not pattern:
         return []
@@ -106,6 +107,8 @@ def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False, hea
         if isinstance(o, bs4.element.Tag):
             stack = GrabStack()
             def parse_tag(tag):
+                if len(urls) >= max_url_count:
+                    return
                 stack.push(tag.name, tag)
                 if show_path:
                     print(stack.get_path(moreinfo=1))
