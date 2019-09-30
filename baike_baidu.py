@@ -121,7 +121,6 @@ def grab(logger):
 def grab_search(logger, word):
     db = DB()
     if db.has_keyword(word):
-        logger.info("word: {} exists".format(word))
         return
 
     import requests
