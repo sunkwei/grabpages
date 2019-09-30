@@ -11,9 +11,7 @@ _jianshu_com = [
     ("div", {
         "id": "list-container",
     }),
-    ("ul", {
-        "class": ["note-list"]
-    }),
+    ("ul", None),
     ("li", None),
     ("div", {
         "class": ["content"]
@@ -26,13 +24,12 @@ _jianshu_com = [
 
 def my_get_urls(tag):
     # tag: <a class="title" href="...">
-    return tag["href"]
+    url = tag["href"]
+    return [url]    # 返回列表
 
 
 # 文章页面
 _content_pattern = [
-    ("html", None),
-    ("body", None),
     ("div", {
         "id": "__next",
     }),
@@ -50,15 +47,15 @@ def my_get_content(tag):
 
 def grab(logger):
     db = DB()
-    urls = get_matched_link(logger, _jianshu_com, "https://jianshu.com", my_get_urls, True)
+    urls = get_matched_link(logger, _jianshu_com, "https://jianshu.com", my_get_urls)
     for url in urls:
         if url[0] == "/":
-            url = "https:/" + url
+            url = "https://jianshu.com" + url
         if db.has(url):
             continue
 
         txt = ""
-        cs = get_page_content(logger, _content_pattern, url, my_get_content)
+        cs = get_page_content(logger, _content_pattern, url, my_get_content, True)
         for c in cs:
             txt += c
 

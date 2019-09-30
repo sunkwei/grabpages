@@ -96,7 +96,7 @@ def get_matched_link(logger, pattern, baseurl, fc_get_urls, show_path=False, hea
     soup = bs(res.content, features="html.parser")
     first_tag = soup
     if pattern[0][1] and "id" in pattern[0][1]:
-        first_tag = soup.find(pattern[0], id=pattern[0][1]["id"])
+        first_tag = soup.find(pattern[0][0], id=pattern[0][1]["id"])
         if not first_tag:
             logger.warning("{} not first_tag matched".format(baseurl))
             return []
@@ -132,10 +132,12 @@ def get_page_content(logger, pattern, url, fc_get_content, show_path=False, head
     soup = bs(res.content, features="html.parser")
     first_tag = soup
     if pattern[0][1] and "id" in pattern[0][1]:
-        first_tag = soup.find(pattern[0], id=pattern[0][1]["id"])
+        first_tag = soup.find(pattern[0][0], id=pattern[0][1]["id"])
         if not first_tag:
             logger.warning("{} not first_tag matched".format(url))
             return []
+        else:
+            first_tag = first_tag.parent
     for o in first_tag:
         if isinstance(o, bs4.element.Tag):
             stack = GrabStack()
