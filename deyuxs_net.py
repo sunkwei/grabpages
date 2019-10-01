@@ -91,7 +91,7 @@ def my_get_cont(tag):
 def grab(logger):
     baseurl = "http://www.deyuxs.net"
     db = DB("deyuxs.db")
-    n_urls = get_matched_link(logger, _deyuxs_net_all, baseurl + "/all", my_get_urls, max_url_count=3)
+    n_urls = get_matched_link(logger, _deyuxs_net_all, baseurl + "/all", my_get_urls, max_url_count=300)
     for n_url in n_urls:
         n_url = baseurl + n_url
         #a_urls = get_matched_link(logger, _novel_main, n_url, my_get_urls2, True)

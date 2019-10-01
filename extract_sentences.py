@@ -10,16 +10,16 @@ import sqlite3 as sq
 
 
 curr_path = osp.dirname(osp.abspath(__file__))
-db_fname = osp.join(curr_path, "news.db")
 txt_fname = osp.join(curr_path, "output.txt")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("extract sentences")
 
 ap = argparse.ArgumentParser()
+ap.add_argument("dbname")
 ap.add_argument("--output", default=txt_fname, help="the text file name for saving sentences")
 args = ap.parse_args()
 
-db = sq.connect(db_fname)
+db = sq.connect(args.dbname)
 
 cur = db.cursor()
 cmd = "select count(*) from tnews"
@@ -35,12 +35,15 @@ cur.execute(cmd)
 
 with open(args.output, "w") as f:
     r = cur.fetchone()
+    n = 0
     while r:
         txt = r[2]
         
         # TODO: 这里断句，并保存到 f
         f.write(txt)
-
+        n += 1
+        if n >= 1000:
+            break
         r = cur.fetchone()
 
 cur.close()
