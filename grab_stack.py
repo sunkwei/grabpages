@@ -132,7 +132,8 @@ def get_page_content(logger, pattern, url, fc_get_content, show_path=False, head
         sess.headers[k] = v
     res = sess.get(url)
     content = []
-    soup = bs(res.content, features="html.parser")
+    enc = res.apparent_encoding
+    soup = bs(res.content.decode(enc, errors="replace"), features="html.parser")
     first_tag = soup
     if pattern[0][1] and "id" in pattern[0][1]:
         first_tag = soup.find(pattern[0][0], id=pattern[0][1]["id"])
