@@ -52,9 +52,9 @@ def my_get_cont(soup):
         "show_text",
         "box_con",
         "text_wz",
-        "gray,box_text",
+        "box_text",
         "artDet",
-        "content,clear,clearfix"
+        "content"
     ]
 
     for id_ in div_id_names:
