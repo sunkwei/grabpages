@@ -15,17 +15,115 @@ from bs4 import BeautifulSoup as bs
         2. 
 '''
 
-def get_article_urls(db):
-    main_url = "http://www.people.com.cn"
-    res = requests.get(main_url)
-    enc = res.apparent_encoding
-    page_cont = res.content.decode(enc)
-    p = re.compile(r"https?://[^/\.]+\.people(\.com)?\.cn/n[0-9]+/[0-9]+/[0-9]+/[^\./]+\.html")
+# 指定多个分站点
+_sites = [
+    {
+        "baseurl": "http://www.people.com.cn",
+        # "encoding": "gb2312",
+        "pattern": r"https?://[^/\.]+\.people(\.com)?\.cn/n[0-9]+/[0-9]+/[0-9]+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://politics.people.com.cn",
+        # "encoding": "utf-8",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://world.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://finance.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://tw.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://military.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://opinion.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://leaders.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://renshi.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://theory.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://legal.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://society.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://industry.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://edu.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://kpzg.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://sports.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://culture.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://art.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://health.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+    {
+        "baseurl": "http://scitech.people.com.cn",
+        "pattern": r"/n\d/\d+/\d+/[^\./]+\.html",
+    },
+]
+
+def get_article_urls(db, cfg):
+    base_url = cfg["baseurl"]
+    res = requests.get(base_url)
+    enc = cfg["encoding"] if "encoding" in cfg else res.apparent_encoding
+    try:
+        page_cont = res.content.decode(enc)
+    except:
+        try:
+            page_cont = res.content.decode("utf-8")
+        except:
+            print("cannot decode page ... for {}".format(base_url))
+            return []
+
+    p = re.compile(cfg["pattern"])
     rc = page_cont
     urls = []
     m = p.search(rc)
     while m:
         url = m.group(0)
+        if url[0] == '/':
+            url = base_url + url
+        elif url[:2] == "//":
+            url = "http:" + url
         if not db.has(url):
             urls.append(url)
         e = m.span()[1]
@@ -75,23 +173,25 @@ def my_get_cont(soup):
 
 def grab(logger):
     db = DB()
-    urls = get_article_urls(db)
-    logger.info("there are {} new articles".format(len(urls)))
-    for url in urls:
-        if db.has(url):
-            continue
-        
-        txt = ""
-        soup = None
-        try:
-            res = requests.get(url)
-            soup = bs(res.content, "html")
-        except Exception as e:
-            logger.error("excp parse {}, {}".format(url, e))
-            continue
+    for site in _sites:
+        urls = get_article_urls(db, site)
+        logger.info("there are {} new articles in {}".format(len(urls), site["baseurl"]))
+        for url in urls:
+            if db.has(url):
+                continue
+            
+            txt = ""
+            soup = None
+            try:
+                res = requests.get(url)
+                ct = res.content.decode(site["encoding"] if "encoding" in site else res.apparent_encoding, errors="replace")
+                soup = bs(ct, "html.parser")
+            except Exception as e:
+                logger.error("excp parse {}, {}".format(url, e))
+                continue
 
-        cs = my_get_cont(soup)
-        for c in cs:
-            txt += c
-        db.save(url, txt)
-        logger.info("{} saving {} bytes".format(url, len(txt)))
+            cs = my_get_cont(soup)
+            for c in cs:
+                txt += c
+            db.save(url, txt)
+            logger.info("{} saving {} bytes".format(url, len(txt)))

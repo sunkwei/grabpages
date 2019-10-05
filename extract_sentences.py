@@ -17,6 +17,7 @@ logger = logging.getLogger("extract sentences")
 ap = argparse.ArgumentParser()
 ap.add_argument("dbname")
 ap.add_argument("--output", default=txt_fname, help="the text file name for saving sentences")
+ap.add_argument("--num", default=sys.maxsize, type=int)
 args = ap.parse_args()
 
 db = sq.connect(args.dbname)
@@ -33,18 +34,18 @@ cur = db.cursor()
 cmd = "select * from tnews"
 cur.execute(cmd)
 
-with open(args.output, "w") as f:
+r = cur.fetchone()
+n = 0
+f = open("out_{}.txt".format(n), "w")
+while r:
+    txt = r[2]
+    f.write(txt)
+    n += 1
     r = cur.fetchone()
-    n = 0
-    while r:
-        txt = r[2]
-        
-        # TODO: 这里断句，并保存到 f
-        f.write(txt)
-        n += 1
-        if n >= 1000:
-            break
-        r = cur.fetchone()
+    if n % args.num == 0:
+        f.close()
+        f = open("out_{}.txt".format(n), "w")
 
+f.close()
 cur.close()
 db.close()
