@@ -55,7 +55,7 @@ def grab(logger):
             continue
 
         txt = ""
-        cs = get_page_content(logger, _content_pattern, url, my_get_content, True)
+        cs = get_page_content(logger, _content_pattern, url, my_get_content)
         for c in cs:
             txt += c
 
