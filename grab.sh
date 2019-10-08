@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pushd /home/sunkw/work/git/grabpages
+pushd /media/nas/sunkw/grabpages
 /usr/bin/python3 grab.py sohu &
 /usr/bin/python3 grab.py people &
 /usr/bin/python3 grab.py xinhuanet &
