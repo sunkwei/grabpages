@@ -39,7 +39,10 @@ n = 0
 f = open("out_{}.txt".format(n), "w")
 while r:
     txt = r[2]
+    # 删除句子中的空白
+    txt = txt.replace(' ', '').replace('\t', '').replace('\r', '').replace('\n', '').replace('　', '')
     f.write(txt)
+    f.write('\n')   # 每篇文章增加一个回车分割
     n += 1
     r = cur.fetchone()
     if n % args.num == 0:
