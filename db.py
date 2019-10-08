@@ -32,6 +32,8 @@ class DB:
         self.db_ = sq.connect(self.fname_)
         cmd = "create table if not exists tnews (_hashid char(36) primary key, _url text, _txt text)"
         self.db_.execute(cmd)
+        self.db_.execute("create unique index if not exists inews on tnews (_hashid)")
+        self.db_.commit()
 
         # 存储百科关键词索引，方便快速检查是否已经下载
         cmd = "select name from sqlite_master where type='table'"
@@ -57,8 +59,7 @@ class DB:
                     h = self.md5(kw)
                     self.db_.execute("insert into tkeywords values (?)", (h,))
                 f = cur.fetchone()
-
-        self.db_.commit()
+            self.db_.commit()
 
 
     def __del__(self):
