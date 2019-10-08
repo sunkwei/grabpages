@@ -11,3 +11,4 @@ pushd /media/nas/sunkw/grabpages
 /usr/bin/python3 grab.py jianshu &
 /usr/bin/python3 grab.py jiqizhixin &
 /usr/bin/python3 grab.py hupu &
+/usr/bin/python3 grab.py qdaily &
