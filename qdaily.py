@@ -10,7 +10,7 @@ import re
 
 def get_urls(logger):
     res = get("http://www.qdaily.com/")
-    ct = res.content.decode(res.apparent_encoding)
+    ct = res.content.decode("utf-8")
     # /articles/64618.html
     p = re.compile(r"/articles/\d+\.html")
     urls = []
@@ -26,7 +26,7 @@ def get_urls(logger):
 
 def get_content(logger, url):
     res = get(url)
-    ct = res.content.decode(res.apparent_encoding)
+    ct = res.content.decode("utf-8")
     s = bs(ct, features="html.parser")
     detail = s.find("div", attrs={"class": "detail"})
     if detail:
