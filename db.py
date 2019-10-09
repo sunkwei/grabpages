@@ -27,7 +27,12 @@ db_fname = osp.join(curr_path, "news.db")
 
 
 class DB:
-    def __init__(self, fname=db_fname):
+    def __init__(self, fname=None):
+        if not fname:
+            import time
+            lm = time.localtime(time.time())
+            fname = "news_{:04d}-{:02d}-{:02d}.db".format(lm[0], lm[1], lm[2])
+
         self.fname_ = fname
         self.db_ = sq.connect(self.fname_)
         cmd = "create table if not exists tnews (_hashid char(36) primary key, _url text, _txt text)"
