@@ -28,6 +28,8 @@ db_fname = osp.join(curr_path, "news.db")
 
 class DB:
     def __init__(self, fname=None):
+        self.db0_ = sq.connect("allurls.db")
+
         if not fname:
             import time
             lm = time.localtime(time.time())
@@ -71,6 +73,13 @@ class DB:
         self.db_.close()
 
 
+    def has0(self, url_hash):
+        cur = self.db0_.cursor()
+        cur.execute("select _hashid from turl_hash where _hashid=?", (url_hash,))
+        r = cur.fetchone()
+        return r is not None
+
+
     def md5(self, url):
         m = hashlib.md5()
         m.update(url.encode("utf-8"))
@@ -79,6 +88,8 @@ class DB:
 
     def has(self, url):
         hashid = self.md5(url)
+        if self.has0(hashid):
+            return True
         cmd = "select count(_hashid) from tnews where _hashid=?"
         cur = self.db_.cursor()
         cur.execute(cmd, (hashid,))
@@ -105,6 +116,9 @@ class DB:
             cur.execute(cmd, (hashid, url, txt))
             cur.close()
 
+            self.db0_.execute("insert into turl_hash values(?)", (hashid,))
+            self.db0_.commit()
+
             # 检查是否时百度百科的搜索 ...
             p = re.compile(r"word\?word=(.+)$")
             m = p.search(url)
@@ -117,3 +131,32 @@ class DB:
             return 0
         else:
             return 1
+
+
+
+
+if __name__ == "__main__":
+    db0 = sq.connect("allurls.db")
+    db0.execute("create table if not exists turl_hash (_hashid char(36) primary key)")
+
+    def get_ids(fname):
+        ids = []
+        db = sq.connect(sys.argv[1])
+        cur = db.cursor()
+        cur.execute("select _hashid from tnews")
+        r = cur.fetchone()
+        while r:
+            ids.append(r[0])
+            r = cur.fetchone()
+        cur.close()
+        db.close()
+        return ids
+
+    ids = get_ids(sys.argv[1])
+
+    print("got {} urls".format(len(ids)))
+    for idx in ids:
+        db0.execute("insert or replace into turl_hash values (?)", (idx,))
+
+    db0.commit()
+    db0.close()
